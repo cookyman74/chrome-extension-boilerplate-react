@@ -1,9 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import logo from '../../assets/img/logo.svg';
 import './Newtab.css';
 import './Newtab.scss';
 
 const Newtab = () => {
+  useEffect(() => {
+    chrome.storage.onChanged.addListener(()=>{
+      console.log("바뀌었다.")
+      chrome.storage.local.get(['id'], (result) => {
+        console.log("데이터가져오기 성공:", result)
+      })
+    })
+  }, [])
+
+  // function onGot(tabInfo) {
+  //   console.log(tabInfo);
+  // }
+  
+  // function onError(error) {
+  //   console.log(`Error: ${error}`);
+  // }
+  
+  // const gettingCurrent = chrome.tabs.getCurrent();
+  // gettingCurrent.then(onGot, onError);
+
   return (
     <div className="App">
       <header className="App-header">
