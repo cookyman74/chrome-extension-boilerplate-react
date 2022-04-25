@@ -1,28 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import logo from '../../assets/img/logo.svg';
 import './Newtab.css';
 import './Newtab.scss';
 
 const Newtab = () => {
-  useEffect(() => {
-    chrome.storage.onChanged.addListener(()=>{
-      console.log("바뀌었다.")
-      chrome.storage.local.get(['id'], (result) => {
-        console.log("데이터가져오기 성공:", result)
-      })
-    })
-  }, [])
-
-  // function onGot(tabInfo) {
-  //   console.log(tabInfo);
-  // }
-  
-  // function onError(error) {
-  //   console.log(`Error: ${error}`);
-  // }
-  
-  // const gettingCurrent = chrome.tabs.getCurrent();
-  // gettingCurrent.then(onGot, onError);
+  const [winId, setWinId] = useState(0)
+  chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    console.log("====")
+    console.log(`발신자(${sender}, 메시지: ${request}`)
+    setWinId(Number(request))
+  })
 
   return (
     <div className="App">
@@ -37,7 +24,7 @@ const Newtab = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React!
+        윈도우 데이터 {winId}
         </a>
         <h6>The color of this paragraph is defined using SASS.</h6>
       </header>

@@ -3,36 +3,50 @@ console.log('Put the background scripts here.');
 
 var app = {};
 app.data = {};
+app.tabStorage2 = async () => {
+  var winId = 0;
+  await chrome.windows.getCurrent({ populate: true }).then((windowInfo) => {
+    winId = windowInfo.id;
+    console.log('쿠키맨 하하하: ', winId);
+  });
 
-chrome.tabs.onCreated.addListener(function () {
-  console.log('탭이 생성되는 경우1');
-  // 모든 탭 리스트를 갱신
-  let winId = chrome.windows.WINDOW_ID_CURRENT;
-  chrome.tabs.query({ windowId: winId }, (tabs) => {
-    for (let tab of tabs) {
-      chrome.storage.local.set(tab, () => {
-        console.log('데이터저장: ', tab);
-      });
+  await chrome.storage.local.set({ winId: winId }, () => {
+    console.log('쿠키맨1111: ', chrome.storage.local.get(['winId']));
+  });
+};
+
+app.tabStorage = async () => {
+  var winId = 0;
+  await chrome.windows.getCurrent({ populate: true }).then((windowInfo) => {
+    winId = windowInfo.id;
+    console.log('쿠키맨 하하하: ', winId);
+  });
+
+  chrome.tabs.query({ title: 'newTab' }, (results) => {
+    var message = { winId: winId };
+    for (let i = 0; i < results.length; i++) {
+      chrome.tabs.sendMessage(results[i].id, message.winId);
     }
   });
-  // winTabs.then((tabs) => {
-  //   for (var tab in tabs) {
-  //     console.log(tab);
-  //     // chrome.storage.local.set(tab, () => {
-  //     //   console.log('데이터저장: ', tab);
-  //     // });
-  //   }
+};
+
+chrome.tabs.onCreated.addListener(() => {
+  console.log('탭이 생성되는 경우1');
+  // 모든 탭 리스트를 갱신
+  // var winId = chrome.windows.WINDOW_ID_CURRENT;
+  // chrome.tabs.query({ windowId: winId }, async (tabs) => {
+  //   await chrome.storage.local.set({ [winId]: tabs }, () => {
+  //     console.log('데이터저장: ', tabs);
+  //   });
   // });
+  app.tabStorage();
 });
 
-chrome.tabs.onActivated.addListener(function (e) {
+chrome.tabs.onActivated.addListener((e) => {
   console.log('탭 활성화되는 경우2');
   // 1. 탭활성화된 정보를 chrome.storage에 저장.
   // 2. storage가 변경되면, vuex에 저장.
-  var value = '2222222';
-  chrome.storage.local.set({ key: value }, () => {
-    console.log('데이터저장: ', value);
-  });
+  app.tabStorage();
 });
 
 chrome.windows.onFocusChanged.addListener(function (windowId) {
@@ -53,11 +67,22 @@ chrome.tabs.onMoved.addListener(function () {
   //그외에는 false으로 저장.
 });
 
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   console.log('탭정보가 업데이트 되는 경우.6');
   // 상세한 연구필요.
-  var value = '666666';
-  chrome.storage.local.set({ key: value }, () => {
-    console.log('데이터저장: ', value);
-  });
+  app.tabStorage();
+});
+
+function logTabs(windowInfo) {
+  for (let tabInfo of windowInfo.tabs) {
+    console.log(tabInfo.url);
+  }
+}
+
+function onError(error) {
+  console.log(`Error: ${error}`);
+}
+
+chrome.action.onClicked.addListener((tab) => {
+  app.tabStorage();
 });
