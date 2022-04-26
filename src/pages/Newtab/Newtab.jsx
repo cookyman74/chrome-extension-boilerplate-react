@@ -7,8 +7,8 @@ const Newtab = () => {
   const [winId, setWinId] = useState(0)
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log("====")
-    console.log(`발신자(${sender}, 메시지: ${request}`)
-    setWinId(Number(request))
+    console.log(`발신자(${sender}, 메시지: ${request.winId}`)
+    setWinId(Number(request.winId))
   })
 
   return (

@@ -7,7 +7,6 @@ app.tabStorage2 = async () => {
   var winId = 0;
   await chrome.windows.getCurrent({ populate: true }).then((windowInfo) => {
     winId = windowInfo.id;
-    console.log('쿠키맨 하하하: ', winId);
   });
 
   await chrome.storage.local.set({ winId: winId }, () => {
@@ -15,17 +14,17 @@ app.tabStorage2 = async () => {
   });
 };
 
-app.tabStorage = async () => {
+
+app.tabs = async (type = 'newTab') => {
   var winId = 0;
   await chrome.windows.getCurrent({ populate: true }).then((windowInfo) => {
     winId = windowInfo.id;
-    console.log('쿠키맨 하하하: ', winId);
   });
 
-  chrome.tabs.query({ title: 'newTab' }, (results) => {
-    var message = { winId: winId };
-    for (let i = 0; i < results.length; i++) {
-      chrome.tabs.sendMessage(results[i].id, message.winId);
+  chrome.tabs.query({title: "newTab"}, (tabs) => {
+    app.data.winId = winId;
+    for (let i = 0; i < tabs.length; i++) {
+      chrome.tabs.sendMessage(tabs[i].id, app.data);
     }
   });
 };
@@ -39,14 +38,14 @@ chrome.tabs.onCreated.addListener(() => {
   //     console.log('데이터저장: ', tabs);
   //   });
   // });
-  app.tabStorage();
+  app.tabs('newtab');
 });
 
 chrome.tabs.onActivated.addListener((e) => {
   console.log('탭 활성화되는 경우2');
   // 1. 탭활성화된 정보를 chrome.storage에 저장.
   // 2. storage가 변경되면, vuex에 저장.
-  app.tabStorage();
+  app.tabs('active');
 });
 
 chrome.windows.onFocusChanged.addListener(function (windowId) {
@@ -70,19 +69,5 @@ chrome.tabs.onMoved.addListener(function () {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   console.log('탭정보가 업데이트 되는 경우.6');
   // 상세한 연구필요.
-  app.tabStorage();
-});
-
-function logTabs(windowInfo) {
-  for (let tabInfo of windowInfo.tabs) {
-    console.log(tabInfo.url);
-  }
-}
-
-function onError(error) {
-  console.log(`Error: ${error}`);
-}
-
-chrome.action.onClicked.addListener((tab) => {
-  app.tabStorage();
+  app.tabs('newtab');
 });
